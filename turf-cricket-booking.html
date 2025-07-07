@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turf Cricket Booking</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f8; margin: 0; }
+        header { background: #2d3e50; color: #fff; padding: 30px 0 20px 0; text-align: center; }
+        h1 { margin: 0; }
+        .container { max-width: 900px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+        .turf-list { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
+        .turf-card { background: #f9fafb; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); padding: 24px; width: 260px; transition: transform 0.2s; }
+        .turf-card:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 4px 16px rgba(0,0,0,0.13); }
+        .turf-card h3 { margin-top: 0; color: #2d3e50; }
+        .turf-card p { margin: 8px 0; color: #444; }
+        .turf-card button { background: #007bff; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 1em; transition: background 0.2s; }
+        .turf-card button:hover { background: #0056b3; }
+        .booking-list { margin-top: 40px; }
+        .booking-list h2 { color: #2d3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f0f0f0; }
+        tr:last-child td { border-bottom: none; }
+        .tab-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; background: #007bff; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 1em; transition: background 0.2s; }
+        .tab-btn:hover { background: #0056b3; }
+        .tab-content { display: none; }
+        .modal-bg { position: fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:1000; }
+        .modal { background:#fff; padding:30px 20px; border-radius:10px; min-width:300px; box-shadow:0 2px 12px rgba(0,0,0,0.15); position:relative; }
+        .modal h3 { margin-top:0; }
+        .modal .close { position:absolute; right:10px; top:10px; font-size:1.5em; cursor:pointer; color:#888; }
+        .notification { position:fixed; top:20px; right:20px; background:#28a745; color:#fff; padding:12px 24px; border-radius:6px; font-weight:bold; z-index:2000; display:none; }
+        .notification.error { background:#dc3545; }
+        .admin-panel { background:#f9fafb; border:1px solid #eee; border-radius:8px; padding:20px; margin-bottom:30px; }
+        .admin-panel h3 { margin-top:0; }
+        .admin-panel input, .admin-panel select { margin-bottom:10px; }
+        @media (max-width: 700px) {
+            .container { padding: 10px; }
+            .turf-list { flex-direction: column; align-items: center; }
+            .turf-card { width: 95%; }
+            .modal { min-width:90vw; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Turf Cricket Booking</h1>
+        <p style="margin:0;">Book your cricket turf easily and quickly!</p>
+        <div style="margin-top:10px;">
+            <span id="userLabel"></span>
+            <button id="loginBtn" onclick="showLogin()" style="margin-left:10px;">Admin Login</button>
+            <button id="logoutBtn" onclick="logoutUser()" style="display:none; margin-left:10px;">Logout</button>
+        </div>
+    </header>
+    <div class="container">
+        <div id="adminPanel" class="admin-panel" style="display:none;">
+            <h3>Admin: Manage Turf Slots</h3>
+            <label for="resetSlotsBtn">Reset all slots to default:</label>
+            <button id="resetSlotsBtn" onclick="resetAllSlots()">Reset Slots</button>
+            <div id="editSlotsList"></div>
+        </div>
+        <div style="text-align:right; margin-bottom: 20px;">
+            <label for="citySelect2" style="font-weight:bold;">Select City:</label>
+            <select id="citySelect2" onchange="onCityChange2()">
+                <option value="">-- Choose City --</option>
+                <option value="Chennai">Chennai</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Bengaluru">Bengaluru</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Kolkata">Kolkata</option>
+                <option value="Pune">Pune</option>
+            </select>
+            <span id="selectedCity2" style="margin-left:10px;color:#007bff;font-weight:bold;"></span>
+        </div>
+        <div class="tab-bar">
+            <button class="tab-btn" id="tab-cricket" onclick="showTab('cricket')">Cricket</button>
+            <button class="tab-btn" id="tab-football" onclick="showTab('football')">Football</button>
+            <button class="tab-btn" id="tab-badminton" onclick="showTab('badminton')">Badminton</button>
+        </div>
+        <div style="margin-bottom:1.5em;">
+            <label for="homepage-city-select" style="font-weight:bold;">Select City:</label>
+            <select id="homepage-city-select" onchange="onHomepageCityChange()">
+                <option value="">-- Choose City --</option>
+                <option value="Chennai">Chennai</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Bengaluru">Bengaluru</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Kolkata">Kolkata</option>
+                <option value="Pune">Pune</option>
+            </select>
+            <span id="homepage-selected-city" style="margin-left:10px;color:#007bff;font-weight:bold;"></span>
+        </div>
+        <div id="homepage-turf-list" class="homepage-turf-list" style="margin-bottom:2em; display:none;"></div>
+        <div id="tab-content-cricket" class="tab-content"></div>
+        <div id="tab-content-football" class="tab-content"></div>
+        <div id="tab-content-badminton" class="tab-content"></div>
+        <div class="booking-list">
+            <h2>Your Recent Bookings</h2>
+            <table id="bookingTable">
+                <thead>
+                    <tr>
+                        <th>Turf</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="notification" id="notification"></div>
+    <script src="turf-booking.js"></script>
+    <script>
+        function onCityChange2() {
+            var city = document.getElementById('citySelect2').value;
+            document.getElementById('selectedCity2').textContent = city ? `Selected: ${city}` : '';
+            // Optionally, filter turfs by city here
+        }
+        function showTab(tab) {
+            document.getElementById('tab-content-cricket').style.display = tab === 'cricket' ? '' : 'none';
+            document.getElementById('tab-content-football').style.display = tab === 'football' ? '' : 'none';
+            document.getElementById('tab-content-badminton').style.display = tab === 'badminton' ? '' : 'none';
+            document.getElementById('tab-cricket').style.background = tab === 'cricket' ? '#007bff' : '';
+            document.getElementById('tab-cricket').style.color = tab === 'cricket' ? '#fff' : '';
+            document.getElementById('tab-football').style.background = tab === 'football' ? '#007bff' : '';
+            document.getElementById('tab-football').style.color = tab === 'football' ? '#fff' : '';
+            document.getElementById('tab-badminton').style.background = tab === 'badminton' ? '#007bff' : '';
+            document.getElementById('tab-badminton').style.color = tab === 'badminton' ? '#fff' : '';
+            renderTurfsWithSlots(tab);
+            renderBookings(tab);
+        }
+        // Notification
+        function showNotification(msg, isError) {
+            var n = document.getElementById('notification');
+            n.textContent = msg;
+            n.className = 'notification' + (isError ? ' error' : '');
+            n.style.display = 'block';
+            setTimeout(() => { n.style.display = 'none'; }, 2500);
+        }
+        // Modal helpers
+        function showModal(html) {
+            var bg = document.createElement('div');
+            bg.className = 'modal-bg';
+            bg.innerHTML = `<div class='modal'>${html}</div>`;
+            document.body.appendChild(bg);
+        }
+        function closeModal() {
+            var bg = document.querySelector('.modal-bg');
+            if(bg) bg.remove();
+        }
+        // User login/register
+        function showLogin() {
+            showModal(`
+                <span class='close' onclick='closeModal()'>&times;</span>
+                <h3>Login</h3>
+                <input id='loginUser' placeholder='Username'><br>
+                <input id='loginPass' type='password' placeholder='Password'><br>
+                <button onclick='loginUser()'>Login</button>
+                <button onclick='showRegister()' style='margin-left:10px;'>Register</button>
+            `);
+        }
+        function showRegister() {
+            showModal(`
+                <span class='close' onclick='closeModal()'>&times;</span>
+                <h3>Register</h3>
+                <input id='regUser' placeholder='Username'><br>
+                <input id='regPass' type='password' placeholder='Password'><br>
+                <button onclick='registerUser()'>Register</button>
+            `);
+        }
+        function loginUser() {
+            var u = document.getElementById('loginUser').value.trim();
+            var p = document.getElementById('loginPass').value;
+            var users = JSON.parse(localStorage.getItem('users')||'[]');
+            var user = users.find(x=>x.username===u && x.password===p);
+            if(user) {
+                localStorage.setItem('loggedInUser', u);
+                closeModal();
+                showNotification('Login successful!');
+                updateLoginUI();
+            } else {
+                showNotification('Invalid credentials!', true);
+            }
+        }
+        function registerUser() {
+            var u = document.getElementById('regUser').value.trim();
+            var p = document.getElementById('regPass').value;
+            if(!u||!p) return showNotification('Enter username and password', true);
+            var users = JSON.parse(localStorage.getItem('users')||'[]');
+            if(users.find(x=>x.username===u)) return showNotification('User exists!', true);
+            users.push({username:u,password:p});
+            localStorage.setItem('users', JSON.stringify(users));
+            closeModal();
+            showNotification('Registration successful!');
+        }
+        function logoutUser() {
+            localStorage.removeItem('loggedInUser');
+            updateLoginUI();
+        }
+        function updateLoginUI() {
+            var u = localStorage.getItem('loggedInUser');
+            var loginBtn = document.getElementById('loginBtn');
+            var logoutBtn = document.getElementById('logoutBtn');
+            var userLabel = document.getElementById('userLabel');
+            if(u === 'admin') {
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = '';
+                userLabel.textContent = 'Welcome, Admin';
+            } else {
+                loginBtn.style.display = '';
+                logoutBtn.style.display = 'none';
+                userLabel.textContent = '';
+            }
+            showAdminPanel && showAdminPanel();
+        }
+        // Admin panel logic
+        function isAdmin() {
+            return localStorage.getItem('loggedInUser') === 'admin';
+        }
+        function showAdminPanel() {
+            document.getElementById('adminPanel').style.display = isAdmin() ? '' : 'none';
+            if(isAdmin()) renderEditSlotsList();
+        }
+        function renderEditSlotsList() {
+            const slots = getTurfSlots();
+            let html = '<table style="width:100%;margin-top:10px;"><tr><th>Turf</th><th>Slots</th><th>Set</th></tr>';
+            Object.keys(slots).forEach(turf => {
+                html += `<tr><td>${turf}</td><td><input type='number' id='slotInput-${turf.replace(/\s/g,'-')}' value='${slots[turf]}' min='0' style='width:60px;'></td><td><button onclick='setSlotForTurf("${turf}")'>Set</button></td></tr>`;
+            });
+            html += '</table>';
+            document.getElementById('editSlotsList').innerHTML = html;
+        }
+        window.setSlotForTurf = function(turf) {
+            const slots = getTurfSlots();
+            const val = parseInt(document.getElementById('slotInput-'+turf.replace(/\s/g,'-')).value,10);
+            slots[turf] = isNaN(val) ? 0 : val;
+            setTurfSlots(slots);
+            renderEditSlotsList();
+            renderTurfsWithSlots('cricket');
+            renderTurfsWithSlots('football');
+            renderTurfsWithSlots('badminton');
+            showNotification('Slots updated!');
+        }
+        window.resetAllSlots = function() {
+            localStorage.removeItem('turfSlots');
+            renderEditSlotsList();
+            renderTurfsWithSlots('cricket');
+            renderTurfsWithSlots('football');
+            renderTurfsWithSlots('badminton');
+            showNotification('All slots reset!');
+        }
+        // Add available slots per turf (in localStorage for demo)
+        function getTurfSlots() {
+            let slots = JSON.parse(localStorage.getItem('turfSlots')||'{}');
+            // Default slots if not set
+            if(Object.keys(slots).length === 0) {
+                slots = {
+                    'Cricket Arena': 5,
+                    'Pitch Masters': 3,
+                    'Boundary Park': 4,
+                    'Goal Ground': 6,
+                    'Soccer Hub': 4,
+                    'Shuttle Court': 8,
+                    'Smash Arena': 7
+                };
+                localStorage.setItem('turfSlots', JSON.stringify(slots));
+            }
+            return slots;
+        }
+        function setTurfSlots(slots) {
+            localStorage.setItem('turfSlots', JSON.stringify(slots));
+        }
+        // Patch renderTurfs to show slots
+        window.renderTurfsWithSlots = function(tab) {
+            let turfs = cricketTurfs;
+            let container = document.getElementById('tab-content-cricket');
+            if (tab === 'football') {
+                turfs = footballTurfs;
+                container = document.getElementById('tab-content-football');
+            } else if (tab === 'badminton') {
+                turfs = badmintonTurfs;
+                container = document.getElementById('tab-content-badminton');
+            }
+            container.innerHTML = '';
+            const slots = getTurfSlots();
+            turfs.forEach(turf => {
+                const div = document.createElement('div');
+                div.className = 'turf-card';
+                div.innerHTML = `
+                    <h3>${turf.name}</h3>
+                    <p>Location: ${turf.location}</p>
+                    <p>Price per hour: ₹${turf.price}</p>
+                    <p><b>Available Slots:</b> <span id="slot-${turf.name.replace(/\s/g,'-')}">${slots[turf.name]||0}</span></p>
+                    <button onclick="bookTurfTabWithSlots('${tab}','${turf.name}')" ${slots[turf.name]===0?'disabled':''}>${slots[turf.name]===0?'Full':'Book Now'}</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+        // Patch booking to update slots
+        window.bookTurfTabWithSlots = function(tab, turfName) {
+            const slots = getTurfSlots();
+            if(slots[turfName]===0) return showNotification('No slots available!', true);
+            const name = prompt(`Booking "${turfName}"
+Enter your name:`);
+            const date = prompt("Enter booking date (YYYY-MM-DD):");
+            const time = prompt("Enter booking time (HH:MM):");
+            if (name && date && time) {
+                const bookings = getBookings();
+                bookings.push({ turf: turfName, name, date, time, sport: tab.charAt(0).toUpperCase()+tab.slice(1) });
+                setBookings(bookings);
+                slots[turfName] = Math.max(0, (slots[turfName]||0)-1);
+                setTurfSlots(slots);
+                document.getElementById('slot-'+turfName.replace(/\s/g,'-')).textContent = slots[turfName];
+                showNotification(`Thank you, ${name}! Your booking for "${turfName}" is confirmed.`);
+                renderBookings(tab);
+            } else {
+                showNotification("Booking cancelled or incomplete.", true);
+            }
+        }
+        // Patch tab switch to use new render
+        window.showTab = function(tab) {
+            document.getElementById('tab-content-cricket').style.display = tab === 'cricket' ? '' : 'none';
+            document.getElementById('tab-content-football').style.display = tab === 'football' ? '' : 'none';
+            document.getElementById('tab-content-badminton').style.display = tab === 'badminton' ? '' : 'none';
+            document.getElementById('tab-cricket').style.background = tab === 'cricket' ? '#007bff' : '';
+            document.getElementById('tab-cricket').style.color = tab === 'cricket' ? '#fff' : '';
+            document.getElementById('tab-football').style.background = tab === 'football' ? '#007bff' : '';
+            document.getElementById('tab-football').style.color = tab === 'football' ? '#fff' : '';
+            document.getElementById('tab-badminton').style.background = tab === 'badminton' ? '#007bff' : '';
+            document.getElementById('tab-badminton').style.color = tab === 'badminton' ? '#fff' : '';
+            renderTurfsWithSlots(tab);
+            renderBookings(tab);
+        }
+        // On load, use new render
+        window.addEventListener('DOMContentLoaded', function() {
+            renderTurfsWithSlots('cricket');
+            renderTurfsWithSlots('football');
+            renderTurfsWithSlots('badminton');
+        });
+       
+        // Default tab
+        showTab('cricket');
+    </script>
+</body>
+</html>
